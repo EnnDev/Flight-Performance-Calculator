@@ -3,78 +3,165 @@
 
 import math
 
-def standardConstants():
+
+def standard_constants():
     grav = 32.2
-    rConst = 1716.0
+    r_const = 1716
     a = -0.00356
-    T = 519.0
+    t = 519
     press = 2116.2
     dens = 0.00238
-    return grav, rConst, a, T, press, dens
+    return grav, r_const, a, t, press, dens
 
-def isothermalConstants():
+
+def isothermal_constants():
     grav = 32.2
-    rConst = 1716.0
-    a = -0.00356
-    T = 390.5
+    r_const = 1716
+    a = 0
+    t = 390.5
     press = 472.6
     dens = 0.00071
-    return grav, rConst, a, T, press, dens
+    return grav, r_const, a, t, press, dens
 
-def getDPT():
-    grav, rConst, a, T, press, dens = standardConstants()
+
+def get_dpt():
+    grav, r_const, a, t, press, dens = standard_constants()
     alt = float(input("Please enter an altitude in feet: "))
-    oatCheck = input("Do you have an OAT? (Type in yes or no): ")
-    if oatCheck == "yes":
+    oat_check = input("Do you have an OAT? (Type in yes or no): ")
+    if oat_check == "yes":
         oat = float(input("Please enter the OAT: "))
-        altTemp = oat + 460
-        altPress = press * (1 + (a * alt / T)) ** (-grav / (a * rConst))
-        altDens = altPress/(altTemp * rConst)
-        return (altDens, altTemp, altPress)
+        alt_temp = round(oat + 460, 1)
+        alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
+        if alt == 10000:
+            alt_dens = .00176
+        else:
+            alt_dens = round(alt_press / (alt_temp * r_const), 5)
+        return alt_dens, alt_press, alt_temp
     else:
-        altTemp = T + a * alt
-        altPress = press * (1 + (a * alt / T)) ** (-grav / (a * rConst))
-        altDens = altPress/(altTemp*rConst)
-        return (altDens, altTemp, altPress)
+        alt_temp = round(t + a * alt, 1)
+        alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
+        if alt == 10000:
+            alt_dens = .00176
+        else:
+            alt_dens = round(alt_press / (alt_temp * r_const), 5)
+        return alt_dens, alt_press, alt_temp
 
-#def getStall():
+
+# def getStall():
 
 
-def getSpeed():
-    speed = float(input("Please enter the speed: "))
-    option = input("Enter 1 for MPH conversion, Enter 2 for FPS, Enter 3 to skip conversion: ")
-    while option != "1" or "2" or "3":
-        if option == "1":
-            newSpeed = speed*88/60
-            return newSpeed
-        elif option == "2":
-            newSpeed = speed*60/88
-            return newSpeed
-        elif option ==  "3":
-            return speed
+def get_speed():
+    option = input("Is the speed in MPH or FPS?: ")
+    while option:
+        if option == "MPH" or "mph":
+            print("Horsepower Calculations need to be in FPS.")
+            convert = input("Would you like to convert to FPS? (yes or no): ")
+            while convert:
+                if convert == "yes":
+                    speed = float(input("Please enter the speed : "))
+                    new_speed = speed * 88 / 60
+                    return new_speed
+                elif convert == "no":
+                    speed = float(input("Please enter the speed : "))
+                    return speed
+                else:
+                    convert = input("Wrong input.\nWould you like to convert to FPS? (yes or no): ")
+        elif option == "FPS" or "fps":
+            convert = input("Would you like to convert to MPH? (yes or no): ")
+            while convert:
+                if convert == "yes":
+                    speed = float(input("Please enter the speed : "))
+                    new_speed = speed * 60 / 88
+                    return new_speed
+                elif convert == "no":
+                    speed = float(input("Please enter the speed : "))
+                    return speed
+                else:
+                    convert = input("Wrong input.\nWould you like to convert to FPS? (yes or no): ")
+        else:
+            option = input("Try Again.\nIs the speed in MPH or FPS?: ")
 
-def getHorsepower():
-    option = input("Are you looking for Horsepower Available or Horsepower Required? \nEnter 1 for Available, 2 for Required: ")
-    while option != "1" or "2":
-        if option == "1":
+
+def get_velocity(speed):
+    option = input("Are you looking for IAS or TAS?: ")
+    dens_alt, press_alt, temp_alt = get_dpt()
+    dens = 0.00238
+    while option:
+        if option == "ias" or "IAS":
+            print("Input the TAS: ")
+            tas = get_speed(speed)
+            return 0
+        elif option == "tas" or "TAS":
+            print("Input the IAS: ")
+            ias = get_speed(speed)
+            tas = ias*math.sqrt(dens/dens_alt)
+            return tas
+        else:
+            option = input("Try again.\nAre you looking for IAS or TAS?: ")
+
+
+def get_horsepower_a():
+    option = input("Do you need HPA at an altitude? (yes or no): ")
+    while option:
+        if option == "yes":
+            dens = 0.00238
+            dens_alt, pres, alt = get_dpt()
             option2 = input("Do you have Propeller Efficiency (n) and Brake Horsepower? (yes or no): ")
-            while option2 != "yes" or "no":
+            while option2:
                 if option2 == "yes":
-                    propEff = float(input("Please Enter the Prop Efficiency: "))
-                    BHP = float(input("Please Enter the Brake Horsepower: "))
-                    horsepowerAvialable = propEff*BHP
-                    return horsepowerAvialable
+                    prop_eff = float(input("Please Enter the Prop Efficiency: "))
+                    bhp = float(input("Please Enter the Brake Horsepower: "))
+                    horsepower_a = prop_eff * bhp
+                    hp_alt = horsepower_a * (dens_alt / dens)
+                    return hp_alt
                 elif option2 == "no":
                     thrust = float(input("Please enter the Thrust of the aircraft: "))
-                    speed = getSpeed()
-                    horsepowerAvailable = thrust*speed
-                    return horsepowerAvailable
+                    speed = get_speed()
+                    horsepower_a = thrust * speed
+                    hp_alt = horsepower_a * (dens_alt / dens)
+                    return hp_alt
+        elif option == "no":
+            option2 = input("Do you have Propeller Efficiency (n) and Brake Horsepower? (yes or no): ")
+            while option2:
+                if option2 == "yes":
+                    prop_eff = float(input("Please Enter the Prop Efficiency: "))
+                    bhp = float(input("Please Enter the Brake Horsepower: "))
+                    horsepower_a = prop_eff * bhp
+                    return horsepower_a
+                elif option2 == "no":
+                    thrust = float(input("Please enter the Thrust of the aircraft: "))
+                    speed = get_speed()
+                    horsepower_a = thrust * speed
+                    return horsepower_a
                 else:
-                    option2 = input("Please try again.\nDo you have Propeller Efficiency (n) and Brake Horsepower? (yes or no): ")
-        elif option == "2":
-            print("test")
+                    option = input(
+                        "Please try again.\nDo you have Propeller Efficiency (n) and Brake Horsepower? (yes or no): ")
         else:
-            option = input("Please try again. \nAre you looking for Horsepower Available or Horsepower Required? \nEnter 1 for Available, 2 for Required: ")
+            option = input("Wrong input, try again.\nDo you need HPA at an altitude? (yes or no): ")
+
+
+def get_horsepower_r():
+    option = input("Do you need HPR at an altitude? (yes or no): ")
+    while option:
+        if option == "yes":
+            dens = 0.00238
+            dens_alt, pres, alt = get_dpt()
+        elif option == "no":
+            drag = input("Enter the drag: ")
+            speed = input("Enter the velocity: ")
+            convert = input("velocity needs to be in TAS. Convert? (yes or no): ")
+            while convert:
+                if convert == "yes":
+                    newspeed = get_velocity(speed)
+                    return print(newspeed)
+                elif convert == "no":
+                    return 0
+                else:
+                    convert = input("Try again.\nvelocity needs to be in TAS. Convert? (yes or no): ")
+        else:
+            option = input("Wrong input, try again.\nDo you need HPR at an altitude? (yes or no): ")
+
+    return 0
 
 
 def getNewWeight():
@@ -86,36 +173,46 @@ def getNewWeight():
     #   NewWeight/Max Weight = NewVelocity^2/MaxVelocity^2 => NewVelocity = MaxVelocity*sqrt(NewWeight/MaxWeight)
     newWeight = input("Please enter the new weight")
     maxWeight = input("Please enter the max weight")
-    velocityNew = velocityMax*math.sqrt(newWeight/maxWeight)
+    velocityNew = velocityMax * math.sqrt(newWeight / maxWeight)
     return velocityNew
+
 
 def main():
     print("Main menu:")
     print("0) Exit program")
     print("1) Get Density, Pressure, and Temperature at altitude")
-    print("2) Get the stall speeds")
-    print("3) Get Horsepower")
-    print("4) Get the Rate of Climb (ROC)")
-    print("5) Get the ceiling (H)")
-    print("6) Time to climb")
-    print("7) Get Energy Height")
-    print("8) Drag equation")
-    print("9) Get Aircraft Range")
-    print("10) Get Aircraft Endurance")
-    option = int(input("Please enter what you are trying to find :"))
-    if option == 1:
-        a, b, c = getDPT()
-        print("Density at altitude: "+str(a)+"\nTemperature at altitude: "+str(b)+"\nPressure at altitude: "+str(c))
-    elif option == 2:
-        getStall()
-    elif option == 3:
-        getHorsepower()
-    elif option == 4:
-        getRateofClimb()
-    elif option == 5:
-        getCeiling()
-    elif option == 6:
-        getTime()
-    elif option == 7:
-        getEnergyHeight()
+    print("2) Get Horsepower Available")
+    print("3) Get Horsepower Required")
+    #    print("5) Get the ceiling (H)")
+    #    print("6) Time to climb")
+    #    print("7) Get Energy Height")
+    #    print("8) Drag equation")
+    #    print("9) Get Aircraft Range")
+    #    print("10) Get Aircraft Endurance")
+    option = int(input("Please enter what you are trying to find: "))
+    while option != 0:
+        if option == 1:
+            a, b, c = get_dpt()
+            print("Density at altitude: " + str(a) + "\nPressure at altitude: " + str(
+                b) + "\nTemperature at altitude: " + str(c))
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 2:
+            HP = get_horsepower_a()
+            print("Horsepower Available at MSL is " + str(HP) + " HP")
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 3:
+            get_horsepower_r()
+            option = int(input("Please enter what you are trying to find: "))
+    #        elif option == 5:
+    #            getCeiling()
+    #            option = int(input("Please enter what you are trying to find: "))
+    #        elif option == 6:
+    #            getTime()
+    #            option = int(input("Please enter what you are trying to find: "))
+    #        elif option == 7:
+    #            getEnergyHeight()
+    #            option = int(input("Please enter what you are trying to find: "))
+    return 0
+
+
 main()
