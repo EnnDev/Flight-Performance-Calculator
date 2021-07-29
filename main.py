@@ -46,6 +46,9 @@ def get_dpt():
             alt_dens = round(alt_press / (alt_temp * r_const), 5)
         return alt_dens, alt_press, alt_temp
 
+def get_dens_altitude():
+    constants = standard_constants()
+    return constants[1]
 
 # def getStall():
 
@@ -147,15 +150,16 @@ def get_horsepower_r():
             dens = 0.00238
             dens_alt, pres, alt = get_dpt()
         elif option == "no":
-            drag = input("Enter the drag: ")
-            speed = input("Enter the velocity: ")
+            drag = float(input("Enter the drag: "))
+            speed = float(input("Enter the velocity: "))
             convert = input("velocity needs to be in TAS. Convert? (yes or no): ")
             while convert:
                 if convert == "yes":
-                    newspeed = get_velocity(speed)
-                    return print(newspeed)
+                    newspeed = drag * (speed * 88 / 60) / 550
+                    return newspeed
                 elif convert == "no":
-                    return 0
+                    newspeed = drag * speed / 550
+                    return newspeed
                 else:
                     convert = input("Try again.\nvelocity needs to be in TAS. Convert? (yes or no): ")
         else:
@@ -164,7 +168,7 @@ def get_horsepower_r():
     return 0
 
 
-def getNewWeight():
+def get_new_weight():
     # Example: New weight = 1750 lbs
     # alpha = constant
     # New weight = Lift = 1/2 Cl*density*velocity^2*Planform Area (S)
@@ -176,13 +180,30 @@ def getNewWeight():
     velocityNew = velocityMax * math.sqrt(newWeight / maxWeight)
     return velocityNew
 
+def get_glide_angle():
+    weight = float(input("Enter the weight of the aircraft in lbs: "))
+    drag = float(input("Enter the drag in lbs: "))
+    angle_deg = degrees(atan(drag/weight))
+    angle_rad = atan(drag/weight)
+    return angle_deg, angle_rad
+
+def get_feul_burn():
+    return 0
+
+def get_range():
+    return 0
+
+def get_endurance():
+    return 0
 
 def main():
     print("Main menu:")
     print("0) Exit program")
     print("1) Get Density, Pressure, and Temperature at altitude")
-    print("2) Get Horsepower Available")
-    print("3) Get Horsepower Required")
+    print("2) Get Density Altitude")
+    print("3) Get Horsepower Available")
+    print("4) Get Horsepower Required")
+
     #    print("5) Get the ceiling (H)")
     #    print("6) Time to climb")
     #    print("7) Get Energy Height")
@@ -197,10 +218,13 @@ def main():
                 b) + "\nTemperature at altitude: " + str(c))
             option = int(input("Please enter what you are trying to find: "))
         elif option == 2:
+            dens_alt = get_dens_altitude()
+            print(dens_alt)
+        elif option == 3:
             HP = get_horsepower_a()
             print("Horsepower Available at MSL is " + str(HP) + " HP")
             option = int(input("Please enter what you are trying to find: "))
-        elif option == 3:
+        elif option == 4:
             get_horsepower_r()
             option = int(input("Please enter what you are trying to find: "))
     #        elif option == 5:
