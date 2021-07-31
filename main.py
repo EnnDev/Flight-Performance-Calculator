@@ -46,12 +46,14 @@ def get_dpt():
             alt_dens = round(alt_press / (alt_temp * r_const), 5)
         return alt_dens, alt_press, alt_temp
 
+
 def get_dens_altitude():
-    constants = standard_constants()
-    return constants[1]
+    grav, r_const, a, t, press, dens = standard_constants()
+    alt_dens, alt_press, alt_temp = get_dpt()
+    dens_alt = t/a*(((alt_dens/dens)**(1/(grav/((a*r_const)-1))))-1)
+    return dens_alt
 
 # def getStall():
-
 
 def get_speed():
     option = input("Is the speed in MPH or FPS?: ")
@@ -196,6 +198,16 @@ def get_range():
 def get_endurance():
     return 0
 
+def get_takeoff_distance():
+    weight = float(input("Please Enter the Weight of the aircraft in lbs: "))
+    speed = float(input("Enter the ground speed in fps: "))
+    thrust_av = float(input("Enter the average thrust in lbs: "))
+    drag_av = float(input("Enter the average drag in lbs: "))
+    roll_res = float(input("Enter the rolling resistance in lbs: "))
+    tan_comp = float(input("Enter the tangential component in lbs: "))
+    takeoff_distance = round(weight*speed**2/(2*32.2*(thrust_av-drag_av-roll_res-tan_comp)), 1)
+    return takeoff_distance
+
 def main():
     print("Main menu:")
     print("0) Exit program")
@@ -203,6 +215,7 @@ def main():
     print("2) Get Density Altitude")
     print("3) Get Horsepower Available")
     print("4) Get Horsepower Required")
+    print("5) Get Takeoff Distance")
 
     #    print("5) Get the ceiling (H)")
     #    print("6) Time to climb")
@@ -226,6 +239,10 @@ def main():
             option = int(input("Please enter what you are trying to find: "))
         elif option == 4:
             get_horsepower_r()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 5:
+            takeoff_distance = get_takeoff_distance()
+            print(takeoff_distance)
             option = int(input("Please enter what you are trying to find: "))
     #        elif option == 5:
     #            getCeiling()
