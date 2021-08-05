@@ -25,26 +25,46 @@ def isothermal_constants():
 
 
 def get_dpt():
-    grav, r_const, a, t, press, dens = standard_constants()
     alt = float(input("Please enter an altitude in feet: "))
     oat_check = input("Do you have an OAT? (Type in yes or no): ")
-    if oat_check == "yes":
-        oat = float(input("Please enter the OAT: "))
-        alt_temp = round(oat + 460, 1)
-        alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
-        if alt == 10000:
-            alt_dens = .00176
+    if alt < 36000:
+        grav, r_const, a, t, press, dens = standard_constants()
+        if oat_check == "yes":
+            oat = float(input("Please enter the OAT: "))
+            alt_temp = round(oat + 460, 1)
+            alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
+            if alt == 10000:
+                alt_dens = .00176
+            else:
+                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            return alt_dens, alt_press, alt_temp
         else:
-            alt_dens = round(alt_press / (alt_temp * r_const), 5)
-        return alt_dens, alt_press, alt_temp
-    else:
-        alt_temp = round(t + a * alt, 1)
-        alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
-        if alt == 10000:
-            alt_dens = .00176
+            alt_temp = round(t + a * alt, 1)
+            alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
+            if alt == 10000:
+                alt_dens = .00176
+            else:
+                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            return alt_dens, alt_press, alt_temp
+    if alt >= 36000:
+        grav, r_const, a, t, press, dens = isothermal_constants()
+        if oat_check == "yes":
+            oat = float(input("Please enter the OAT: "))
+            alt_temp = round(oat + 460, 1)
+            alt_press = round(press * math.exp(grav/(r_const*t)*36089-alt))
+            if alt == 10000:
+                alt_dens = .00176
+            else:
+                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            return alt_dens, alt_press, alt_temp
         else:
-            alt_dens = round(alt_press / (alt_temp * r_const), 5)
-        return alt_dens, alt_press, alt_temp
+            alt_temp = round(t + a * alt, 1)
+            alt_press = round(press * math.exp(grav/(r_const*t)*36089-alt))
+            if alt == 10000:
+                alt_dens = .00176
+            else:
+                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            return alt_dens, alt_press, alt_temp
 
 
 def get_dens_altitude():
@@ -198,6 +218,39 @@ def get_range():
 def get_endurance():
     return 0
 
+def get_thrust_average():
+    t_ini = float(input("Enter the initial thrust, to calculate, type -1: "))
+#    if t_ini == -1:
+#        a =
+#        headwind =
+#        b =
+#        t_ini =
+    t_fin = float(input("Enter the final thrust, to calculate, type -1: "))
+#    if t_ini == -1:
+#        a =
+#        headwind =
+#        b =
+#        ti_fin =
+    dens = float(input("Enter the density at this altitude: "))
+#    t_avg = ((t_ini + t_fin)/2)*(dens/.00238)
+    return 0
+
+def get_drag_average():
+    d_fin = float(input("Enter the final drag (read this from chart): "))
+    d_ini = float(input("Enter the initial drag, to calculate, type -1: "))
+#    if d_ini = -1:
+
+    return 0
+
+
+def get_roll_resistance():
+    return 0
+
+
+def get_tangential_component():
+    return 0
+
+
 def get_takeoff_distance():
     weight = float(input("Please Enter the Weight of the aircraft in lbs: "))
     speed = float(input("Enter the ground speed in fps: "))
@@ -219,7 +272,7 @@ def main():
 
     #    print("5) Get the ceiling (H)")
     #    print("6) Time to climb")
-    #    print("7) Get Energy Height")
+    #     print("7) Get Energy Height")
     #    print("8) Drag equation")
     #    print("9) Get Aircraft Range")
     #    print("10) Get Aircraft Endurance")
