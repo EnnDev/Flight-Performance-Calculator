@@ -5,7 +5,7 @@ import math
 
 
 def standard_constants():
-    grav = 32.2
+    grav = -32.2
     r_const = 1716
     a = -0.00356
     t = 519
@@ -15,7 +15,7 @@ def standard_constants():
 
 
 def isothermal_constants():
-    grav = 32.2
+    grav = -32.2
     r_const = 1716
     a = 0
     t = 390.5
@@ -26,44 +26,33 @@ def isothermal_constants():
 
 def get_dpt():
     alt = float(input("Please enter an altitude in feet: "))
-    oat_check = input("Do you have an OAT? (Type in yes or no): ")
     if alt < 36000:
+        oat_check = input("Do you have an OAT? (Type in yes or no): ")
         grav, r_const, a, t, press, dens = standard_constants()
         if oat_check == "yes":
             oat = float(input("Please enter the OAT: "))
-            alt_temp = round(oat + 460, 1)
-            alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
-            if alt == 10000:
-                alt_dens = .00176
-            else:
-                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            alt_temp = oat + 460
+            alt_press = press * (1+((a*alt)/t))**(grav/(a*r_const))
+            alt_dens = alt_press/(r_const*alt_temp)
             return alt_dens, alt_press, alt_temp
         else:
             alt_temp = round(t + a * alt, 1)
-            alt_press = round(press * (1 + (a * alt / t)) ** (-grav / (a * r_const)), 1)
-            if alt == 10000:
-                alt_dens = .00176
-            else:
-                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            alt_press = press * (1 + ((a * alt) / t)) ** (grav / (a * r_const))
+            alt_dens = round(dens * (1 - (-a * alt) / t) ** ((-grav / (-a * r_const))-1), 5)
             return alt_dens, alt_press, alt_temp
     if alt >= 36000:
+        oat_check = input("Do you have an OAT? (Type in yes or no): ")
         grav, r_const, a, t, press, dens = isothermal_constants()
         if oat_check == "yes":
             oat = float(input("Please enter the OAT: "))
             alt_temp = round(oat + 460, 1)
             alt_press = round(press * math.exp(grav/(r_const*t)*36089-alt))
-            if alt == 10000:
-                alt_dens = .00176
-            else:
-                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            alt_dens = round(alt_press / (alt_temp * r_const), 5)
             return alt_dens, alt_press, alt_temp
         else:
             alt_temp = round(t + a * alt, 1)
             alt_press = round(press * math.exp(grav/(r_const*t)*36089-alt))
-            if alt == 10000:
-                alt_dens = .00176
-            else:
-                alt_dens = round(alt_press / (alt_temp * r_const), 5)
+            alt_dens = round(alt_press / (alt_temp * r_const), 5)
             return alt_dens, alt_press, alt_temp
 
 
@@ -73,7 +62,26 @@ def get_dens_altitude():
     dens_alt = t/a*(((alt_dens/dens)**(1/(grav/((a*r_const)-1))))-1)
     return dens_alt
 
-# def getStall():
+
+def get_stall_speed():
+    l = float(input("Enter the lift or weight of the aircraft: "))
+    cl = float(input("Enter the max coefficient of lift: "))
+    pf = float(input("Enter the plan-form area: "))
+    stall = math.sqrt((2*l)/(cl*.00238*pf))
+    print("The stall speed is "+str(stall)+" IAS, in fps")
+    return stall
+
+def get_accel_speed():
+    stall = float(input("Enter the stall speed in mph or fps: "))
+    print("Here are the Limiting Load Factors of the following aircraft:")
+    print("Normal: 3.8")
+    print("Utility: 4.4")
+    print("Acrobatic: 6")
+    print("Transport: 2.5")
+    llf = float(input("Enter the LLF: "))
+    va = stall*math.sqrt(llf)
+    print("The acceleration velocity is "+str(va)+" (mph or fps)")
+    return va
 
 def get_speed():
     option = input("Is the speed in MPH or FPS?: ")
@@ -205,17 +213,42 @@ def get_new_weight():
 def get_glide_angle():
     weight = float(input("Enter the weight of the aircraft in lbs: "))
     drag = float(input("Enter the drag in lbs: "))
-    angle_deg = degrees(atan(drag/weight))
-    angle_rad = atan(drag/weight)
+    angle_deg = math.degrees(math.atan(drag/weight))
+    angle_rad = math.atan(drag/weight)
+    print("The glide angle in degrees: "+str(angle_deg))
+    print("The glide angle in radians: "+str(angle_rad))
     return angle_deg, angle_rad
 
+
+def get_roc():
+    hpa = float(input("Enter the horsepower available: "))
+    hpr = float(input("Enter the horsepower required: "))
+    w = float(input("Enter the weight of the aircraft: "))
+    roc = (33000*(hpa-hpr))/w
+    sr = (33000*(hpr))/w
+    print("The rate of climb is: "+str(roc)+" fps.")
+    print("The sink rate is: " + str(sr) + " fps.")
+    return roc
+
+def get_sr():
+    hpr = float(input("Enter the horsepower required: "))
+    w = float(input("Enter the weight of the aircraft: "))
+    sr = (33000 * (hpr)) / w
+    print("The sink rate is: " + str(sr) + " fps.")
+    return sr
+
 def get_feul_burn():
+    bhp = float(input("Enter the BHP of the engine: "))
+    sfc = float(input("Enter the specific fuel consumption (SFC): "))
+    burn = (sfc*bhp)/6
+    print("The fuel burn is "+str(burn)+" gal/hr.")
+    return burn
+
+def get_range_prop():
+
     return 0
 
-def get_range():
-    return 0
-
-def get_endurance():
+def get_endurance_prop():
     return 0
 
 def get_thrust_average():
@@ -259,16 +292,32 @@ def get_takeoff_distance():
     roll_res = float(input("Enter the rolling resistance in lbs: "))
     tan_comp = float(input("Enter the tangential component in lbs: "))
     takeoff_distance = round(weight*speed**2/(2*32.2*(thrust_av-drag_av-roll_res-tan_comp)), 1)
+    print("The takeoff distance is: "+str(takeoff_distance))
     return takeoff_distance
+
+def get_energy_climb():
+    cruise = float(input("Enter the cruising speed in mph IAS: "))
+    alt = float(input("Enter the cruising altitude in ft: "))
+    dens = float(input("Enter the density at this altitude: "))
+    h = alt+((cruise*math.sqrt(.00238/dens)*(88/60))**2)/(2*32.2)
+    print("The aircraft can theoretically zoom climb to "+str(round(h,2))+" ft at this point.")
+    return h
 
 def main():
     print("Main menu:")
     print("0) Exit program")
-    print("1) Get Density, Pressure, and Temperature at altitude")
+    print("1) Get Density, Pressure, and Temperature at altitude #Broken above 36K")
     print("2) Get Density Altitude")
-    print("3) Get Horsepower Available")
-    print("4) Get Horsepower Required")
+    print("3) Get Horsepower Available #broken")
+    print("4) Get Horsepower Required #broken")
     print("5) Get Takeoff Distance")
+    print("6) Get Stall Speed")
+    print("7) Get Acceleration Speed")
+    print("8) Get the Glide Angle")
+    print("9) Get the Rate of climb & sink rate")
+    print("10) Get only sink rate: ")
+    print("11) Get fuel burn: ")
+    print("12) Get Energy/Zoom climb")
 
     #    print("5) Get the ceiling (H)")
     #    print("6) Time to climb")
@@ -296,6 +345,27 @@ def main():
         elif option == 5:
             takeoff_distance = get_takeoff_distance()
             print(takeoff_distance)
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 6:
+            get_stall_speed()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 7:
+            get_accel_speed()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 8:
+            get_glide_angle()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 9:
+            get_roc()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 10:
+            get_sr()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 11:
+            get_feul_burn()
+            option = int(input("Please enter what you are trying to find: "))
+        elif option == 12:
+            get_energy_climb()
             option = int(input("Please enter what you are trying to find: "))
     #        elif option == 5:
     #            getCeiling()
